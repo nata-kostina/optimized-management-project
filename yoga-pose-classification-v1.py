@@ -118,17 +118,15 @@ history = model_vgg.fit(
 )
 t1 = perf_counter() 
 
-print(f"Training time: {t1 - t0:.6f} seconds")
-
 t2 = perf_counter()   
-
 # Evaluate on training dataset
 train_loss, train_acc = model_vgg.evaluate(train_ds)
 # Evaluate on validation dataset
 test_loss, test_acc = model_vgg.evaluate(val_ds)
 t3 = perf_counter() 
 
-print(f"Evaluation time: {t3 - t2:.6f} seconds")
-
 print(f"Final Train Accuracy: {train_acc * 100:.2f}%")
 print(f"Final Validation Accuracy: {test_acc * 100:.2f}%")
+
+print(f"Training time: {t1 - t0:.6f} seconds")
+print(f"Evaluation time: {t3 - t2:.6f} seconds")

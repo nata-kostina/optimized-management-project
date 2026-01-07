@@ -1,4 +1,6 @@
 from dotenv import load_dotenv
+from memory_profiler import profile
+
 import os
 from time import perf_counter
 
@@ -38,12 +40,12 @@ EPOCHS = 1
 
 def prepare_data(train_dir, test_dir, batch_size=16):
     # Define the training data generator with specified augmentations
-    train_datagen = IDG(shear_range=0.2,      # Randomly apply shearing transformations
-                        zoom_range=0.2,       # Randomly zoom inside images
-                        horizontal_flip=True, # Randomly flip images horizontally
-                        rescale = 1./255      # Rescale the pixel values to [0,1]
-                        )
-
+    # train_datagen = IDG(shear_range=0.2,      # Randomly apply shearing transformations
+    #                     zoom_range=0.2,       # Randomly zoom inside images
+    #                     horizontal_flip=True, # Randomly flip images horizontally
+    #                     rescale = 1./255      # Rescale the pixel values to [0,1]
+    #                     )
+    train_datagen = IDG(rescale = 1./255 )
     # Define the testing data generator with rescaling only
     test_datagen = IDG(rescale = 1./255 )     # Rescale the pixel values to [0,1]
 
@@ -134,11 +136,11 @@ def train_model(model, train_gen, val_gen, epochs=2, batch_size=16):
                     callbacks=cbs,
                     shuffle=True)
     t1 = perf_counter() 
-    print(f"Training time: {t1 - t0:.6f} seconds")
+    training_time = t1 - t0
 
-    return history
+    return history, training_time
 
-history = train_model(model_vgg, train_generator, validation_generator, EPOCHS, batch_size)
+history, training_time = train_model(model_vgg, train_generator, validation_generator, EPOCHS, batch_size)
 
 t2 = perf_counter()   
 
@@ -146,7 +148,9 @@ train_loss, train_acc = model_vgg.evaluate(train_generator)
 test_loss, test_acc   = model_vgg.evaluate(validation_generator)
 
 t3 = perf_counter() 
-print(f"Evaluation time: {t3 - t2:.6f} seconds")
 
 print(f"Final Train Accuracy: {train_acc * 100:.2f}%")
 print(f"Final Validation Accuracy: {test_acc * 100:.2f}%")
+
+print(f"Training time: {training_time:.6f} seconds")
+print(f"Evaluation time: {t3 - t2:.6f} seconds")
