@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+from memory_profiler import profile
 import os
 import torch
 import tensorflow as tf
@@ -14,17 +15,23 @@ load_dotenv()
 # -------------------------------
 # Load pre-saved tensors
 # -------------------------------
-tensor_root = os.getenv("TENSOR_DIR")
+@profile
+def load_tensors():
+    tensor_root = os.getenv("TENSOR_DIR")
+    
+    X_train = torch.load(os.path.join(tensor_root, "train_X.pt"))
+    y_train = torch.load(os.path.join(tensor_root, "train_y.pt"))
+    
+    X_val = torch.load(os.path.join(tensor_root, "test_X.pt"))
+    y_val = torch.load(os.path.join(tensor_root, "test_y.pt"))
+    
+    # Convert to numpy for TensorFlow
+    X_train = X_train.permute(0,2,3,1).numpy()
+    X_val   = X_val.permute(0,2,3,1).numpy()
+    
+    return X_train, y_train, X_val, y_val
 
-X_train = torch.load(os.path.join(tensor_root, "train_X.pt"))
-y_train = torch.load(os.path.join(tensor_root, "train_y.pt"))
-
-X_val = torch.load(os.path.join(tensor_root, "test_X.pt"))
-y_val = torch.load(os.path.join(tensor_root, "test_y.pt"))
-
-# Convert from (N, C, H, W) to (N, H, W, C) for TensorFlow
-X_train = X_train.permute(0, 2, 3, 1).numpy()
-X_val   = X_val.permute(0, 2, 3, 1).numpy()
+X_train, y_train, X_val, y_val = load_tensors()
 
 # One-hot encode labels
 no_classes = len(set(y_train.tolist()))
