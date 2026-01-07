@@ -30,7 +30,7 @@ no_classes = len(class_names)
 batch_size=16
 
 # Set the number of epochs
-EPOCHS = 1
+EPOCHS = 2
 
 # Define the training data generator with specified augmentations
 train_datagen = IDG(shear_range=0.2,      # Randomly apply shearing transformations
@@ -117,7 +117,7 @@ cbs = [lr_reduction]
 
 history = model_vgg.fit(train_generator,
                     validation_data=validation_generator,
-                    epochs=1,
+                    epochs=EPOCHS,
                     batch_size=batch_size,
                     callbacks=cbs,
                     shuffle=True)
