@@ -16,10 +16,10 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 load_dotenv()
 
 # Setting the path to the training directory that contains the data for yoga asanas
-train_dir = os.getenv("TEST_DIR")
+train_dir = os.getenv("TRAIN_DIR")
 
 # Setting the path to the test directory that contains the data for yoga asanas
-test_dir = os.getenv("TRAIN_DIR")
+test_dir = os.getenv("TEST_DIR")
 
 #  list all the files in the directory and store them in 'class_names' alphabetically
 class_names = sorted(os.listdir(train_dir))
@@ -120,3 +120,9 @@ history = model_vgg.fit(train_generator,
                     batch_size=batch_size,
                     callbacks=cbs,
                     shuffle=True)
+
+train_loss, train_acc = model_vgg.evaluate(train_generator)
+test_loss, test_acc   = model_vgg.evaluate(validation_generator)
+
+print(f"Final Train Accuracy: {train_acc * 100:.2f}%")
+print(f"Final Validation Accuracy: {test_acc * 100:.2f}%")
