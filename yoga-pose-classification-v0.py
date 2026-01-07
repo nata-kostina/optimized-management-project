@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import os
+
 # Tensorflow Libraries
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
@@ -12,6 +13,8 @@ from keras.optimizers import Adam
 from PIL import ImageFile
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+print("My PID:", os.getpid())
 
 load_dotenv()
 
@@ -30,32 +33,36 @@ no_classes = len(class_names)
 batch_size=16
 
 # Set the number of epochs
-EPOCHS = 2
+EPOCHS = 1
 
-# Define the training data generator with specified augmentations
-train_datagen = IDG(shear_range=0.2,      # Randomly apply shearing transformations
-                    zoom_range=0.2,       # Randomly zoom inside images
-                    horizontal_flip=True, # Randomly flip images horizontally
-                    rescale = 1./255      # Rescale the pixel values to [0,1]
-                    )
+def prepare_data(train_dir, test_dir, batch_size=16):
+    # Define the training data generator with specified augmentations
+    train_datagen = IDG(shear_range=0.2,      # Randomly apply shearing transformations
+                        zoom_range=0.2,       # Randomly zoom inside images
+                        horizontal_flip=True, # Randomly flip images horizontally
+                        rescale = 1./255      # Rescale the pixel values to [0,1]
+                        )
 
-# Define the testing data generator with rescaling only
-test_datagen = IDG(rescale = 1./255 )     # Rescale the pixel values to [0,1]
+    # Define the testing data generator with rescaling only
+    test_datagen = IDG(rescale = 1./255 )     # Rescale the pixel values to [0,1]
 
-# Create a generator for training data from a directory
-train_generator =  train_datagen.flow_from_directory(train_dir,                 # Directory path for training data
-                                                    target_size = (224,224),    # Reshape images to the specified dimensions
-                                                    color_mode = 'rgb',         # Color mode set to RGB
-                                                    class_mode = 'categorical', # Use categorical labels
-                                                    batch_size = batch_size     # Set the batch size for training
-                                                     )
+    # Create a generator for training data from a directory
+    train_generator =  train_datagen.flow_from_directory(train_dir,                 # Directory path for training data
+                                                        target_size = (224,224),    # Reshape images to the specified dimensions
+                                                        color_mode = 'rgb',         # Color mode set to RGB
+                                                        class_mode = 'categorical', # Use categorical labels
+                                                        batch_size = batch_size     # Set the batch size for training
+                                                        )
 
-# Create a generator for validation data from a directory
-validation_generator  = test_datagen.flow_from_directory(test_dir,              # Directory path for testing data
-                                                  target_size = (224,224),
-                                                  color_mode = 'rgb',
-                                                  class_mode = 'categorical'
-                                                 )
+    # Create a generator for validation data from a directory
+    validation_generator  = test_datagen.flow_from_directory(test_dir,              # Directory path for testing data
+                                                    target_size = (224,224),
+                                                    color_mode = 'rgb',
+                                                    class_mode = 'categorical'
+                                                    )
+
+    return train_generator, validation_generator
+
 
 # Model Name
 model_name = "Yoga-Pose-Classification"
@@ -114,9 +121,18 @@ lr_reduction = ReduceLROnPlateau(monitor='val_accuracy',    # Monitors the valid
 # Store the ReduceLROnPlateau callback in a list. This list can be passed to a training session.
 cbs = [lr_reduction]
 
-history = model_vgg.fit(train_generator,
-                    validation_data=validation_generator,
-                    epochs=EPOCHS,
+train_generator, validation_generator = prepare_data(train_dir, test_dir, batch_size)
+
+def train_model(model, train_gen, val_gen, epochs=2, batch_size=16):
+    history = model.fit(train_gen,
+                    validation_data=val_gen,
+                    epochs=epochs,
                     batch_size=batch_size,
                     callbacks=cbs,
                     shuffle=True)
+
+    return history
+
+history = train_model(model_vgg, train_generator, validation_generator, EPOCHS, batch_size)
+
+
