@@ -188,7 +188,7 @@ cbs = [lr_reduction]
 
 history = model_vgg.fit(train_generator,
                     validation_data=validation_generator,
-                    epochs=1,
+                    epochs=EPOCHS,
                     batch_size=batch_size,
                     callbacks=cbs,
                     shuffle=True)
